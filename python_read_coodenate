@@ -1,0 +1,152 @@
+from Bio import AlignIO
+
+import re
+
+
+
+alnfile  = "S_aa_MSA_pathogenic_v2.fasta"
+
+OGlycTab = "O_S_glyc_all.txt"
+
+InTab1 = open(OGlycTab, "r")
+
+selected = []
+
+
+
+with InTab1:
+
+	for line in InTab1:
+
+		lineArray = line.split()
+
+		id = lineArray[0]
+
+		coord = lineArray[3]
+
+		score = lineArray[5]
+
+		#print(id, coord, score) ### DIAG
+
+		#score = float(score)
+
+		#if (score < 0.5): continue ### If filter is applied
+
+		score = str(score)
+
+		selected.append(id + "\t" + coord+ "\t" +  score)
+
+		### in case of empty line
+
+		if 'str' in line:
+
+			break
+
+### close
+
+InTab1.close()
+
+
+
+###### MORE
+
+
+
+##### OPENING fasta
+
+alnfileObj = AlignIO.read(alnfile, "fasta")
+
+for record in alnfileObj:
+
+### Defining variants
+
+	seqAln = record.seq
+
+	NameSeqAln = record.id
+
+	length = len(record.seq)
+
+	length = int(length) 	### this number will be useful
+
+
+
+	#print (NameSeqAln)
+
+
+
+	# One by one
+
+	gaps = 0
+
+	for x in range(length):
+
+		y = int(x - gaps + 1) ### This number is required for the number for every set
+
+		a = seqAln[x:x+1:1] ### moving residue by residue
+
+		a = (a.upper())
+
+		if (a == '-'):
+
+			gaps = (gaps + 1) ### Considerating gaps
+
+		print (NameSeqAln,  end="")
+
+		print ("\t", end="")
+
+		print ( x+1 , end="")
+
+		print ("\t", end="")
+
+		print (y , end="")
+
+		print ("\t", end="")
+
+		print (a , end="")
+
+
+
+		### Review for a score
+
+		currscor = 0
+
+		for alpha in selected:
+
+			lineArray = alpha.split("\t")
+
+			dd = lineArray[0]
+
+			coordd = lineArray[1]
+
+			scoree = lineArray[2]
+
+			temp = dd.split(".") #New string to take dd before the underscore
+
+			dd2 = temp[0]
+
+			temp2 = NameSeqAln.split("_")
+
+			NameSeqAln2 = temp2[0]
+
+			if (NameSeqAln == dd): ### If the id from the fasta is the same as the tab id
+
+				if (coordd == y):
+
+					currscor = scoree
+
+				if (a == '-'): ### Put a zero if the character is a gap
+
+					currscor = 0
+
+		print ("\t", end="")
+
+		print (currscor , end="")
+
+		print ( "" , end="\n")
+
+
+
+
+
+### End.
+
